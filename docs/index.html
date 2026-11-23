@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CYD UniFi Monitor — Web Installer</title>
+<meta name="description" content="Flash the CYD UniFi Monitor firmware to an ESP32 Cheap Yellow Display straight from your browser.">
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --edge: #30363d; --text: #e6edf3; --dim: #8b949e;
+    --accent: #3fb9f8; --good: #3fb950; --warn: #d29922; --btn: #1f6feb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.01em; }
+  h2 { font-size: 20px; margin: 40px 0 12px; }
+  p { margin: 8px 0; }
+  a { color: var(--accent); }
+  .lead { color: var(--dim); font-size: 17px; max-width: 640px; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 24px 0 8px; }
+  .shots img { width: 100%; image-rendering: pixelated; border-radius: 8px; border: 1px solid var(--edge); background: #000; }
+  .step { display: flex; gap: 14px; margin: 18px 0; }
+  .num { flex: 0 0 30px; height: 30px; border-radius: 50%; background: var(--panel); border: 1px solid var(--edge);
+         display: grid; place-items: center; font-weight: 600; color: var(--accent); }
+  .boards { display: grid; gap: 10px; margin-top: 10px; }
+  .board { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--edge);
+           border-radius: 10px; background: var(--panel); cursor: pointer; }
+  .board:hover { border-color: #484f58; }
+  .board.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .board input { margin-top: 5px; accent-color: var(--accent); }
+  .board .title { font-weight: 600; }
+  .board .meta { color: var(--dim); font-size: 14px; }
+  .badge { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 99px; margin-left: 6px; vertical-align: 2px; }
+  .badge.ok { background: rgba(63,185,80,.15); color: var(--good); }
+  .badge.untested { background: rgba(210,153,34,.15); color: var(--warn); }
+  .install { margin: 22px 0 6px; padding: 18px; border-radius: 10px; background: var(--panel); border: 1px solid var(--edge); }
+  esp-web-install-button button[slot=activate] {
+    background: var(--btn); color: #fff; border: 0; border-radius: 8px; padding: 12px 22px; font-size: 17px; font-weight: 600; cursor: pointer;
+  }
+  .note { color: var(--dim); font-size: 14px; }
+  .warn { color: var(--warn); }
+  code { background: var(--panel); border: 1px solid var(--edge); border-radius: 5px; padding: 1px 5px; font-size: 14px; }
+  footer { margin-top: 48px; color: var(--dim); font-size: 13px; border-top: 1px solid var(--edge); padding-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>CYD UniFi Monitor</h1>
+  <p class="lead">A live dashboard for your UniFi network on a ~$15 ESP32 “Cheap Yellow Display”: throughput, ping, clients, devices, firewall stats and alerts.</p>
+
+  <div class="shots">
+    <img src="images/overview.png" alt="Overview screen: throughput graph, download and upload speed, clients, ping, experience and WAN uptime">
+    <img src="images/devices.png" alt="UniFi devices list with online status and client counts">
+    <img src="images/alerts.png" alt="Alerts list with active alarms and recent security events">
+  </div>
+
+  <h2>Install</h2>
+
+  <div class="step"><div class="num">1</div><div>
+    <b>Pick your board.</b> Not sure? Check the model printed on the back of the board.
+    <div class="boards" id="boards"><p class="note">Loading boards…</p></div>
+  </div></div>
+
+  <div class="step"><div class="num">2</div><div style="flex:1">
+    <b>Plug it in with a USB data cable, then click Install.</b>
+    <div class="install">
+      <esp-web-install-button id="installer">
+        <button slot="activate">Install</button>
+        <span slot="unsupported" class="warn">Your browser can't flash devices. Use desktop <b>Chrome</b> or <b>Edge</b>.</span>
+        <span slot="not-allowed" class="warn">The installer needs a secure (https) page.</span>
+      </esp-web-install-button>
+      <p class="note" id="selected-note"></p>
+      <p class="note">Choose the serial port that appears when you plug the board in. If nothing shows up, try another cable
+        (many are charge-only) or install the <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener">CH340 USB driver</a>.
+        If flashing won't start, hold the <b>BOOT</b> button on the board while clicking Install.</p>
+    </div>
+  </div></div>
+
+  <div class="step"><div class="num">3</div><div>
+    <b>Set it up from your phone.</b> After flashing, the screen shows a WiFi network named
+    <code>UniFi-Monitor-XXXX</code>. Join it and a setup page opens (or browse to <code>http://192.168.4.1</code>).
+    Enter your 2.4&nbsp;GHz WiFi and your UniFi console's IP address, plus a <b>local-only</b> admin account
+    (UniFi → Settings → Admins &amp; Users → Add Admin → “Restrict to local access only”).
+    To change settings later, hold the screen while it starts up.
+  </div></div>
+
+  <h2>Requirements</h2>
+  <p>A UniFi OS console on your network (UDM, UDM Pro/SE, Cloud Gateway, Cloud Key Gen2, UXG with a console), and one of the boards above.
+    Boards marked <span class="badge untested">untested</span> are built from their published pinouts — if one works (or doesn't) for you,
+    please <a href="https://github.com/Nhscan/CYD-UniFi-Monitor/issues">open an issue</a>.</p>
+
+  <footer>
+    Firmware <span id="version"></span> ·
+    <a href="https://github.com/Nhscan/CYD-UniFi-Monitor">Source on GitHub</a> ·
+    Installer powered by <a href="https://esphome.github.io/esp-web-tools/">ESP Web Tools</a>.<br>
+    Not affiliated with Ubiquiti Inc. UniFi is a trademark of Ubiquiti Inc.
+  </footer>
+</main>
+
+<script>
+  const installer = document.getElementById("installer");
+  const list = document.getElementById("boards");
+  const note = document.getElementById("selected-note");
+
+  function select(board) {
+    installer.manifest = `manifests/${board.env}.json`;
+    note.textContent = `Will install for: ${board.name}`;
+    document.querySelectorAll(".board").forEach(el => el.classList.toggle("selected", el.dataset.env === board.env));
+    history.replaceState(null, "", `#${board.env}`);
+  }
+
+  fetch("boards.json").then(r => r.json()).then(({ version, boards }) => {
+    document.getElementById("version").textContent = "v" + version;
+    list.innerHTML = "";
+    for (const b of boards) {
+      const label = document.createElement("label");
+      label.className = "board";
+      label.dataset.env = b.env;
+      label.innerHTML = `<input type="radio" name="board">
+        <div><div class="title"></div><div class="meta"></div></div>`;
+      label.querySelector(".title").textContent = b.name;
+      const badge = document.createElement("span");
+      badge.className = "badge " + (b.tested ? "ok" : "untested");
+      badge.textContent = b.tested ? "tested" : "untested";
+      label.querySelector(".title").appendChild(badge);
+      label.querySelector(".meta").textContent = `${b.screen} · ${b.identify}`;
+      label.querySelector("input").addEventListener("change", () => select(b));
+      list.appendChild(label);
+    }
+    const fromHash = boards.find(b => "#" + b.env === location.hash) || boards[0];
+    list.querySelector(`[data-env="${fromHash.env}"] input`).checked = true;
+    select(fromHash);
+  }).catch(() => {
+    list.innerHTML = '<p class="warn">Couldn\'t load the board list. Try reloading the page.</p>';
+  });
+</script>
+</body>
+</html>

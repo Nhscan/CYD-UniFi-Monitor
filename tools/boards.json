@@ -1,0 +1,42 @@
+[
+  {
+    "env": "cyd-2432s028-2usb",
+    "name": "ESP32-2432S028 — 2.8\" with USB-C + micro-USB (\"CYD2USB\")",
+    "short": "2.8\" CYD, two USB ports",
+    "screen": "2.8\" 320×240, ST7789",
+    "identify": "Two USB sockets on the edge (USB-C and micro-USB). Printed ESP32-2432S028 on the back.",
+    "tested": true
+  },
+  {
+    "env": "cyd-2432s028r",
+    "name": "ESP32-2432S028R — classic 2.8\" CYD",
+    "short": "2.8\" CYD, micro-USB only",
+    "screen": "2.8\" 320×240, ILI9341",
+    "identify": "One micro-USB socket. The original \"Cheap Yellow Display\".",
+    "tested": false
+  },
+  {
+    "env": "cyd-2432s024r",
+    "name": "ESP32-2432S024R — 2.4\" resistive",
+    "short": "2.4\" CYD",
+    "screen": "2.4\" 320×240, ILI9341",
+    "identify": "Smaller 2.4\" screen, printed ESP32-2432S024 on the back. Pick the R (resistive touch) version.",
+    "tested": false
+  },
+  {
+    "env": "cyd-2432s032r",
+    "name": "ESP32-2432S032R — 3.2\" resistive",
+    "short": "3.2\" CYD",
+    "screen": "3.2\" 320×240, ST7789",
+    "identify": "3.2\" screen, printed ESP32-2432S032 on the back. Pick the R (resistive touch) version.",
+    "tested": false
+  },
+  {
+    "env": "cyd-3248s035r",
+    "name": "ESP32-3248S035R — 3.5\" resistive",
+    "short": "3.5\" CYD",
+    "screen": "3.5\" 480×320, ST7796",
+    "identify": "Large 3.5\" screen, printed ESP32-3248S035 on the back. Pick the R (resistive touch) version.",
+    "tested": false
+  }
+]

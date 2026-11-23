@@ -1,0 +1,12 @@
+# PlatformIO
+.pio/
+.vscode/
+
+# Your WiFi / UniFi logins - never commit
+include/credentials.h
+
+# Local tooling
+.venv/
+_site/
+*.log
+__pycache__/

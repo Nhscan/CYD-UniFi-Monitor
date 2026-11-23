@@ -24,17 +24,39 @@ shutil.copytree(root / "docs", out)
 (out / "firmware").mkdir(exist_ok=True)
 (out / "manifests").mkdir(exist_ok=True)
 
+def find_boot_app0():
+    """boot_app0.bin ships with the Arduino framework package."""
+    pio_home = pathlib.Path.home() / ".platformio" / "packages"
+    for p in sorted(pio_home.glob("framework-arduinoespressif32*/tools/partitions/boot_app0.bin")):
+        return p
+    sys.exit("can't find boot_app0.bin in ~/.platformio/packages")
+
+
 for b in boards:
     env = b["env"]
-    factory = root / ".pio" / "build" / env / "firmware.factory.bin"
-    if not factory.exists():
-        sys.exit(f"missing {factory} - run `pio run -e {env}` first")
-    shutil.copy(factory, out / "firmware" / f"{env}.bin")
+    build = root / ".pio" / "build" / env
+    factory = build / "firmware.factory.bin"
+    if factory.exists():
+        # One merged image flashed at 0x0
+        shutil.copy(factory, out / "firmware" / f"{env}.bin")
+        parts = [{"path": f"../firmware/{env}.bin", "offset": 0}]
+    else:
+        # Separate images at the standard ESP32 Arduino offsets
+        if not (build / "firmware.bin").exists():
+            sys.exit(f"missing {build / 'firmware.bin'} - run `pio run -e {env}` first")
+        pieces = [("bootloader.bin", build / "bootloader.bin", 0x1000),
+                  ("partitions.bin", build / "partitions.bin", 0x8000),
+                  ("boot_app0.bin", find_boot_app0(), 0xE000),
+                  ("app.bin", build / "firmware.bin", 0x10000)]
+        parts = []
+        for suffix, src, offset in pieces:
+            shutil.copy(src, out / "firmware" / f"{env}-{suffix}")
+            parts.append({"path": f"../firmware/{env}-{suffix}", "offset": offset})
     manifest = {
         "name": f"CYD UniFi Monitor - {b['short']}",
         "version": version,
         "new_install_prompt_erase": True,
-        "builds": [{"chipFamily": "ESP32", "parts": [{"path": f"../firmware/{env}.bin", "offset": 0}]}],
+        "builds": [{"chipFamily": "ESP32", "parts": parts}],
     }
     (out / "manifests" / f"{env}.json").write_text(json.dumps(manifest, indent=2))
 
